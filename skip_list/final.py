@@ -61,8 +61,8 @@ class SkipList(object):
             update[level][level + 1] = new_node
 
     def ceiling(self, search_data):
-        """Returns the least element greater than or equal to `elem`, or 0 if no such
-element exists.
+        """Returns the least element greater than or equal to `search_data`, or 0 if no
+such element exists.
 
         """
         height = len(self.head)
