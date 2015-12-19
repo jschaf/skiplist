@@ -1,209 +1,82 @@
-from itertools import dropwhile, count, cycle
-import random
+# Profiling
+# Baseline: 64.1s
+# Without head and tail properties: 59.0s
+# without next and dropwhile: 11.067s
+# with self.level 17s
+# only lists 8.8s
+# inline ceiling 7.8s
+# while loop for node_height: 5.9s
 
 
-def geometric(p):
-    return (next(dropwhile(lambda _: random.randint(1, int(1. / p)) == 1, count())) for _ in cycle([1]))
+class SkipList(object):
+
+    def __init__(self):
+        self.tail = [2**63 - 1]
+        self.head = [-2**31, self.tail]
 
 
-def uniform(n):
-    """
-    Simple deterministic distribution for testing internal of the skiplist
-    """
-    return (n for _ in cycle([1]))
+    def find_lower(self, search_data, update):
+        height = len(self.head)
+        node = self.head
+        for level in range(height - 1, 0, -1):
+            next_node = node[level]
 
-from abc import ABCMeta, abstractmethod, abstractproperty
-from contextlib import contextmanager
-from math import log
+            # 0 is index for data
+            while next_node[0] < search_data:
+                node = next_node
+                next_node = node[level]
 
-import collections
-from itertools import chain, takewhile, dropwhile
-from threading import Lock
+            # update doesn't have a 0 element data
+            update[level - 1] = node
 
-from iterators import geometric
-
-
-class NIL(object):
-    """Sentinel object that always compares greater than another object"""
-    __slots__ = ()
-
-    def __cmp__(self, other):
-        return 1
-
-    def __str__(self):
-        return 'NIL'
-
-    def __nonzero__(self):
-        return False
+        return node
 
 
-class _Skipnode(object):
-    __slots__ = ('data', 'nxt', 'key', 'prev', 'height')
+    def insert(self, data):
+        """Inserts data into appropriate position."""
 
-    def __init__(self, key, data, nxt, prev):
-        self.key = key
-        self.data = data
-        self.nxt = nxt
-        self.prev = prev
+        # Subtract 1 because first elem of head is data
+        height = len(self.head) - 1
 
-        for level in range(len(prev)):
-            prev[level].nxt[level] = self.nxt[level].prev[level] = self
+        # update is an out-parameter from find_lower
+        update = [None] * height
+        node = self.find_lower(data, update)
 
+        node_height = 0
+        while random() < 0.5:
+            node_height += 1
 
-class LockableArray(list):
-    def __init__(self, seq=()):
-        super(LockableArray, self).__init__(seq)
-        self._lock = Lock()
+        # Add new levels if node_height > head
+        for _ in range(node_height - height):
+            self.head.append(self.tail)
+            update.append(self.head)
 
-    @contextmanager
-    def lock(self):
-        try:
-            yield self._lock.acquire()
-        finally:
-            self._lock.release()
+        new_node = [data]
+        for i in range(node_height):
+            # Add next levels from update
+            new_node.append(update[i][i+1])
 
+        for level in range(node_height):
+            # Point update levels at new_node
+            update[level][level + 1] = new_node
 
-class SkiplistAbstractBase:
-    __metaclass__ = ABCMeta
-    """Class for randomized indexed skip list. The default
-    distribution of node heights is geometric."""
+    def ceiling(self, search_data):
+        """Returns the least element greater than or equal to `search_data`, or 0 if no
+such element exists.
 
-    distribution = geometric(0.5)
+        """
+        height = len(self.head)
+        node = self.head
+        for level in range(height - 1, 0, -1):
+            next_node = node[level]
 
-    @abstractproperty
-    def head(self):
-        raise NotImplementedError
+            # 0 is index for data
+            while next_node[0] < search_data:
+                node = next_node
+                next_node = node[level]
 
-    @abstractproperty
-    def tail(self):
-        raise NotImplementedError
-
-    def _height(self):
-        return len(self.head.nxt)
-
-    def _level(self, start=None, level=0):
-        node = start or self.head.nxt[level]
-        while node is not self.tail:
-            yield node
-            node = node.nxt[level]
-
-    def _scan(self, key):
-        return_value = None
-        height = len(self.head.nxt)
-        prevs = LockableArray([self.head] * height)
-        start = self.head.nxt[-1]
-        for level in reversed(range(height)):
-            node = next(
-                dropwhile(
-                    lambda node_: node_.nxt[level].key <= key,
-                    chain([self.head], self._level(start, level))
-                )
-            )
-            if node.key == key:
-                return_value = node
-            else:
-                prevs[level] = node
-                # do not need to scan from the head again, so start from this node at the lower level
-                start = node.nxt[level - 1].prev[level - 1]
-
-        return return_value, prevs
-
-    def _insert(self, key, data):
-            """Inserts data into appropriate position."""
-
-            node, update = self._scan(key)
-
-            if node:
-                node.data = data
-                return
-
-            node_height = next(self.distribution) + 1  # because height should be positive non-zero
-            # if node's height is greater than number of levels
-            # then add new levels, if not do nothing
-            height = len(self.head.nxt)
-
-            update.extend([self.head for _ in range(height, node_height)])
-
-            self.head.nxt.extend([self.tail for _ in range(height, node_height)])
-
-            self.tail.prev.extend([self.head for _ in range(height, node_height)])
-
-            new_node = _Skipnode(key, data, [update[l].nxt[l] for l in range(node_height)], [update[l] for l in range(node_height)])
-
-    def _remove(self, key):
-        """Removes node with given data. Raises KeyError if data is not in list."""
-
-        node, update = self._scan(key)
-        if not node:
-            raise KeyError
-
-        with update.lock():
-            for level in range(len(node.nxt)):
-                update[level].nxt[level] = node.nxt[level]
-
-        del node
-
-
-class Skiplist(SkiplistAbstractBase, collections.MutableMapping):
-
-    def _remove(self, key):
-        super(Skiplist, self)._remove(key)
-        self._size -= 1
-
-    def _insert(self, key, data):
-        super(Skiplist, self)._insert(key, data)
-        self._size += 1
-
-    @property
-    def head(self):
-        return self._head
-
-    @property
-    def tail(self):
-        return self._tail
-
-    def __init__(self, **kwargs):
-        super(Skiplist, self).__init__()
-
-        self._tail = _Skipnode(NIL(), None, [], [])
-        self._head = _Skipnode(None, 'HEAD', [self.tail], [])
-        self._tail.prev.extend([self.head])
-
-        self._size = 0
-
-        for k, v in kwargs.iteritems():
-            self[k] = v
-
-    def __len__(self):
-        return self._size
-
-    def __str__(self):
-        return 'skiplist({{{}}})'.format(
-            ', '.join('{key}: {value}'.format(key=node.key, value=node.data) for node in self._level())
-        )
-
-    def __getitem__(self, key):
-        """Returns item with given index"""
-        node, _ = self._scan(key)
-        if node is None:
-            raise KeyError('Key <{0}> not found'.format(key))
-        return node.data
-
-    def __setitem__(self, key, value):
-        return self._insert(key, value)
-
-    def __delitem__(self, key):
-        self._remove(key)
-
-    def __iter__(self):
-        """Iterate over keys in sorted order"""
-        return (node.key for node in self._level())
-
-    def iteritems(self):
-        return ((node.key, node.data) for node in self._level())
-
-    def iterkeys(self):
-        return (item[0] for item in self.iteritems())
-
-    def itervalues(self):
-        return (item[1] for item in self.iteritems())
+        candidate = node[1]
+        if candidate is not self.tail:
+            return candidate[0]
+        else:
+            return 0
