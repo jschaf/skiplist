@@ -8,11 +8,21 @@
 # while loop for node_height: 5.9s
 
 
+from random import random
+
+
 class SkipList(object):
 
     def __init__(self):
-        self.tail = [2**63 - 1]
-        self.head = [-2**31, self.tail]
+        self.tail = ["<TAIL>"]
+        self.head = ["<HEAD>", self.tail]
+
+
+    def __iter__(self):
+        node = self.head[1]
+        while node is not self.tail:
+            yield node[0]
+            node = node[1]
 
 
     def find_lower(self, search_data, update):
@@ -22,7 +32,7 @@ class SkipList(object):
             next_node = node[level]
 
             # 0 is index for data
-            while next_node[0] < search_data:
+            while next_node is not self.tail and next_node[0] < search_data:
                 node = next_node
                 next_node = node[level]
 
@@ -32,46 +42,61 @@ class SkipList(object):
         return node
 
 
-    def insert(self, data):
+    def add(self, data):
         """Inserts data into appropriate position."""
 
         # Subtract 1 because first elem of head is data
-        height = len(self.head) - 1
+        head_height = len(self.head) - 1
 
-        # update is an out-parameter from find_lower
-        update = [None] * height
+        # update is an out-parameter from find_lower.  Update is an list of nodes just
+        # before the insertion point at each level.
+        update = [None] * head_height
         node = self.find_lower(data, update)
 
-        node_height = 0
+        # node_height must be at least 1, so all nodes are reachable at the
+        # bottom level, which is a linked list.  That means node[1] always
+        # points to the very next node.
+        node_height = 1
         while random() < 0.5:
             node_height += 1
 
-        # Add new levels if node_height > head
-        for _ in range(node_height - height):
+        # Add new levels if the new node_height exceeds head_height because
+        # head must be able to reach all nodes.
+        for _ in range(node_height - head_height):
             self.head.append(self.tail)
             update.append(self.head)
 
         new_node = [data]
         for i in range(node_height):
-            # Add next levels from update
-            new_node.append(update[i][i+1])
+            # Get the node just before new_node at level i with update[i].
+            # Then get the node that update[i] is pointing at with
+            # update[i][i+1], that node is located after new_node.  We need the
+            # +1 because update doesn't have data at update[0], but the node
+            # it's pointing at does have data at the 0th index.
+            new_node.append(update[i][i + 1])
 
         for level in range(node_height):
-            # Point update levels at new_node
+            # Point update at new_node so the chain at level i includes
+            # new_node.
             update[level][level + 1] = new_node
 
     def ceiling(self, search_data):
-        """Returns the least element greater than or equal to `search_data`, or 0 if no
+        """Returns the least element greater than or equal to `search_data`, or None if no
 such element exists.
 
+        If `search_data` is None, return None.
         """
+
+        if search_data is None:
+            return None
+
         height = len(self.head)
         node = self.head
         for level in range(height - 1, 0, -1):
             next_node = node[level]
 
             # 0 is index for data
-            while next_node[0] < search_data:
+            while next_node is not self.tail and next_node[0] < search_data:
                 node = next_node
                 next_node = node[level]
 
@@ -79,4 +104,4 @@ such element exists.
         if candidate is not self.tail:
             return candidate[0]
         else:
-            return 0
+            return None

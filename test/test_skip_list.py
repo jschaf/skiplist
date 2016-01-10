@@ -1,55 +1,61 @@
 import unittest
 
-def maximise(collection, array, m):
-    sums_seen = collection
-    sums_seen.add(0)
-    mod_running = 0
-    best = 0
-    for num in array:
-        mod_running = (mod_running + num) % m
-        sums_seen.insert(mod_running)
-        goal = (mod_running + 1) % m
-        nearest_goal = sums_seen.ceiling(goal)
-        best = max(best, (mod_running - nearest_goal) % m)
-    return best
-
-def main(file):
-    for _ in range(num_cases):
-        size, mod = [int(x) for x in file.readline().split()]
-        array = [int(x) for x in file.readline().split()]
-        print(maximise(array, mod))
-
-class TestMaximise(unittest.TestCase):
-
-    def test_single(self):
-        self.assertEqual(maximise([1], 2), 1)
-
-
-    def test_single_overflow(self):
-        self.assertEqual(maximise([3], 2), 1)
-
-
-    def test_example(self):
-        self.assertEqual(maximise([3, 3, 9, 9, 5], 7), 6)
-
-
-    def test_zeroes(self):
-        self.assertEqual(maximise([0, 0, 0], 1), 0)
-        self.assertEqual(maximise([0, 0, 0], 3), 0)
-
-
-    def test_ones(self):
-        self.assertEqual(maximise([1, 1, 1, 1], 1), 0)
-        self.assertEqual(maximise([1, 1, 1, 1], 2), 1)
-        self.assertEqual(maximise([1, 1, 1, 1], 3), 2)
-        self.assertEqual(maximise([1, 1, 1, 1], 4), 3)
-
-    def test_simple(self):
-        self.assertEqual(maximise([5, 4], 7), 5)
-        self.assertEqual(maximise([3, 1, 2], 7), 6)
-        self.assertEqual(maximise([1, 1, 8], 7), 3)
-
+from skip_list.skip_list import SkipList
 
 class TestSkipList(unittest.TestCase):
 
-    pass
+    def test_empty(self):
+        "Test operations on an empty skip list."
+        skip = SkipList()
+        self.assertIsNone(skip.ceiling(9))
+        self.assertIsNone(skip.ceiling(None))
+
+
+    def test_order_empty(self):
+        skip = SkipList()
+        self.assertEqual(list(skip), [])
+
+
+    def test_ceiling_one_elem(self):
+        "Test operations on a skip list with one element."
+        skip = SkipList()
+        skip.add(1)
+        self.assertEqual(skip.ceiling(-1), 1)
+        self.assertEqual(skip.ceiling(0), 1)
+        self.assertEqual(skip.ceiling(1), 1)
+        self.assertIsNone(skip.ceiling(2))
+
+
+    def test_order_one_elem(self):
+        skip = SkipList()
+        skip.add(2)
+        self.assertEqual(list(skip), [2])
+
+
+    def test_ceiling_two_elems(self):
+        "Test operations on a skip list with two elements."
+        skip = SkipList()
+        skip.add(1)
+        skip.add(10)
+        self.assertEqual(skip.ceiling(-1), 1)
+        self.assertEqual(skip.ceiling(0), 1)
+        self.assertEqual(skip.ceiling(1), 1)
+        self.assertEqual(skip.ceiling(2), 10)
+        self.assertEqual(skip.ceiling(7), 10)
+        self.assertEqual(skip.ceiling(10), 10)
+
+        self.assertIsNone(skip.ceiling(11))
+        self.assertIsNone(skip.ceiling(12))
+
+
+    def test_order_two_elems(self):
+        skip = SkipList()
+        skip.add(2)
+        skip.add(4)
+        self.assertEqual(list(skip), [2, 4])
+
+        # reverse order
+        skip = SkipList()
+        skip.add(4)
+        skip.add(2)
+        self.assertEqual(list(skip), [2, 4])
