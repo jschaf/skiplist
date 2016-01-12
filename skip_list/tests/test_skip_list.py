@@ -59,3 +59,6 @@ class TestSkipList(unittest.TestCase):
         skip.add(4)
         skip.add(2)
         self.assertEqual(list(skip), [2, 4])
+
+if __name__ == '__main__':
+    unittest.main()

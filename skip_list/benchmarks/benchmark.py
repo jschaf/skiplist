@@ -1,13 +1,16 @@
+from skip_list.skip_list import SkipList
+import unittest
+
 def maximise(collection, array, m):
-    sums_seen = collection
+    sums_seen = collection()
     sums_seen.add(0)
     mod_running = 0
     best = 0
     for num in array:
         mod_running = (mod_running + num) % m
-        sums_seen.insert(mod_running)
+        sums_seen.add(mod_running)
         goal = (mod_running + 1) % m
-        nearest_goal = sums_seen.ceiling(goal)
+        nearest_goal = sums_seen.ceiling(goal) or 0
         best = max(best, (mod_running - nearest_goal) % m)
     return best
 
@@ -52,3 +55,7 @@ class TestSkipListMixin(object):
 
 class TestSkipList(TestSkipListMixin, unittest.TestCase):
     maximise_fn = lambda self, array, m: maximise(SkipList, array, m)
+
+
+if __name__ == "__main__":
+    unittest.main()
