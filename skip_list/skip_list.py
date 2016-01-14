@@ -7,23 +7,19 @@
 # inline ceiling 7.8s
 # while loop for node_height: 5.9s
 
-
 from random import random
 
 
 class SkipList(object):
-
     def __init__(self):
         self.tail = ["<TAIL>"]
         self.head = ["<HEAD>", self.tail]
-
 
     def __iter__(self):
         node = self.head[1]
         while node is not self.tail:
             yield node[0]
             node = node[1]
-
 
     def find_lower(self, search_data, update):
         height = len(self.head)
@@ -41,15 +37,14 @@ class SkipList(object):
 
         return node
 
-
     def add(self, data):
         """Inserts data into appropriate position."""
 
         # Subtract 1 because first elem of head is data
         head_height = len(self.head) - 1
 
-        # update is an out-parameter from find_lower.  Update is an list of nodes just
-        # before the insertion point at each level.
+        # update is an out-parameter from find_lower.  Update is an list of
+        # nodes just before the insertion point at each level.
         update = [None] * head_height
         node = self.find_lower(data, update)
 
