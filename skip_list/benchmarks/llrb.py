@@ -1,5 +1,4 @@
 class LLRB(object):
-
     class Node(object):
         RED = True
         BLACK = False
@@ -10,16 +9,13 @@ class LLRB(object):
             self.right = None
             self.color = LLRB.Node.RED
 
-
         def flip_colors(self):
             self.color = not self.color
             self.left.color = not self.left.color
             self.right.color = not self.right.color
 
-
     def __init__(self):
         self.root = None
-
 
     def ceiling(self, value):
         """Return the smallest item greater than or equal to value.  If no such value
@@ -39,7 +35,6 @@ class LLRB(object):
 
         return best
 
-
     @staticmethod
     def is_red(node):
         if node is None:
@@ -47,11 +42,9 @@ class LLRB(object):
         else:
             return node.color == LLRB.Node.RED
 
-
     def add(self, value):
         self.root = LLRB.insert_at(self.root, value)
         self.root.color = LLRB.Node.BLACK
-
 
     @staticmethod
     def insert_at(node, value):
@@ -68,14 +61,12 @@ class LLRB(object):
         else:
             node.right = LLRB.insert_at(node.right, value)
 
-
         if LLRB.is_red(node.right) and not LLRB.is_red(node.left):
             node = LLRB.rotate_left(node)
         if LLRB.is_red(node.left) and LLRB.is_red(node.left.left):
             node = LLRB.rotate_right(node)
 
         return node
-
 
     @staticmethod
     def rotate_left(node):
@@ -85,7 +76,6 @@ class LLRB(object):
         x.color = node.color
         node.color = LLRB.Node.RED
         return x
-
 
     @staticmethod
     def rotate_right(node):

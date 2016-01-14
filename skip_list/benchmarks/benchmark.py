@@ -1,5 +1,9 @@
 from skip_list.skip_list import SkipList
+from skip_list.tests.test_skip_list import SkipListTestMixin
+
+from .zhukov_skip_list import Skiplist as ZhukovSkipList
 import unittest
+
 
 def maximise(collection, array, m):
     sums_seen = collection()
@@ -14,6 +18,7 @@ def maximise(collection, array, m):
         best = max(best, (mod_running - nearest_goal) % m)
     return best
 
+
 def main(file):
     for _ in range(num_cases):
         size, mod = [int(x) for x in file.readline().split()]
@@ -21,24 +26,19 @@ def main(file):
         print(maximise(array, mod))
 
 
-class TestSkipListMixin(object):
-
+class TestMaximiseMixin(object):
     def test_single(self):
         self.assertEqual(self.maximise_fn([1], 2), 1)
-
 
     def test_single_overflow(self):
         self.assertEqual(self.maximise_fn([3], 2), 1)
 
-
     def test_example(self):
         self.assertEqual(self.maximise_fn([3, 3, 9, 9, 5], 7), 6)
-
 
     def test_zeroes(self):
         self.assertEqual(self.maximise_fn([0, 0, 0], 1), 0)
         self.assertEqual(self.maximise_fn([0, 0, 0], 3), 0)
-
 
     def test_ones(self):
         self.assertEqual(self.maximise_fn([1, 1, 1, 1], 1), 0)
@@ -51,10 +51,14 @@ class TestSkipListMixin(object):
         self.assertEqual(self.maximise_fn([3, 1, 2], 7), 6)
         self.assertEqual(self.maximise_fn([1, 1, 8], 7), 3)
 
+# class TestMaximise(TestMaximiseMixin, unittest.TestCase):
+#     maximise_fn = lambda self, array, m: maximise(SkipList, array, m)
+
+# ALTERNATE_IMPLEMENTATIONS = [ZhukovSkipList]
 
 
-class TestSkipList(TestSkipListMixin, unittest.TestCase):
-    maximise_fn = lambda self, array, m: maximise(SkipList, array, m)
+class TestZhukovSkipList(SkipListTestMixin, unittest.TestCase):
+    SkipListClass = ZhukovSkipList
 
 
 if __name__ == "__main__":
