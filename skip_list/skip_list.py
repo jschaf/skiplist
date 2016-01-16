@@ -40,10 +40,10 @@ class SkipList(object):
     def add(self, data):
         """Inserts data into appropriate position."""
 
-        # Subtract 1 because first elem of head is data
+        # Subtract 1 because the first element of head is data
         head_height = len(self.head) - 1
 
-        # update is an out-parameter from find_lower.  Update is an list of
+        # update is an out-parameter from find_lower.  Update is a list of
         # nodes just before the insertion point at each level.
         update = [None] * head_height
         node = self.find_lower(data, update)
@@ -52,6 +52,8 @@ class SkipList(object):
         # bottom level, which is a linked list.  That means node[1] always
         # points to the very next node.
         node_height = 1
+
+        # Poor man's Bernoulli distribution, i.e. simulate a coin flip.
         while random() < 0.5:
             node_height += 1
 
