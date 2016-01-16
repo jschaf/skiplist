@@ -1,5 +1,4 @@
 from skip_list.skip_list import SkipList
-from skip_list.tests.test_skip_list import SkipListTestMixin
 
 from .zhukov_skip_list import Skiplist as ZhukovSkipList
 import unittest
@@ -55,10 +54,6 @@ class TestMaximiseMixin(object):
 #     maximise_fn = lambda self, array, m: maximise(SkipList, array, m)
 
 # ALTERNATE_IMPLEMENTATIONS = [ZhukovSkipList]
-
-
-class TestZhukovSkipList(SkipListTestMixin, unittest.TestCase):
-    SkipListClass = ZhukovSkipList
 
 
 if __name__ == "__main__":
