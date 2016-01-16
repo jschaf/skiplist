@@ -102,6 +102,27 @@ class SkiplistAbstractBase:
             yield node
             node = node.nxt[level]
 
+
+    def _ceiling_scan(self, key):
+        node = self.head
+        best = self.head
+        height = len(self.head.nxt)
+        start = self.head.nxt[-1]
+        for level in reversed(range(height)):
+            node = next(dropwhile(lambda node_: node_.nxt[level].key <= key,
+                                  chain(
+                                      [self.head], self._level(start, level))))
+            if node is not None:
+                best = node
+            else:
+                # do not need to scan from the head again, so start from this node at the lower level
+                start = node.nxt[level - 1].prev[level - 1]
+
+        if best.data == key:
+            return key
+        else:
+            return best.nxt[0].data
+
     def _scan(self, key):
         return_value = None
         height = len(self.head.nxt)
@@ -211,7 +232,7 @@ class Skiplist(SkiplistAbstractBase, collections.MutableMapping):
         if key is None:
             return None
 
-        value, prevs = self._scan(key)
+        value = self._ceiling_scan(key)
         return value
 
     def __setitem__(self, key, value):
