@@ -1,7 +1,9 @@
-from skip_list.skip_list import SkipList
+from collections import namedtuple
 
+from skip_list.skip_list import SkipList
 from .zhukov_skip_list import Skiplist as ZhukovSkipList
 import unittest
+import time
 
 
 def maximise(collection, array, m):
@@ -18,43 +20,48 @@ def maximise(collection, array, m):
     return best
 
 
-def main(file):
-    for _ in range(num_cases):
-        size, mod = [int(x) for x in file.readline().split()]
-        array = [int(x) for x in file.readline().split()]
-        print(maximise(array, mod))
+class benchmark(object):
+    def __init__(self,name):
+        self.name = name
+    def __enter__(self):
+        self.start = time.time()
+    def __exit__(self,ty,val,tb):
+        end = time.time()
+        print("%s : %0.3f seconds" % (self.name, end-self.start))
+        return False
+
+IMPLEMENTATIONS = [SkipList, ZhukovSkipList]
+
+TestData = namedtuple("TestData", ("mod_number", "data_array", "answer"))
+
+def get_test_data(file_path):
+    with open(file_path, "r") as test_file:
+        num_cases = int(test_file.readline())
+        test_data = []
+        for _ in range(num_cases):
+            size, mod = [int(x) for x in test_file.readline().split()]
+            array = [int(x) for x in test_file.readline().split()]
+            answer = int(test_file.readline())
+            test_data.append(TestData(mod_number=mod,
+                                      data_array=array,
+                                      answer=answer))
+
+    return test_data
 
 
-class TestMaximiseMixin(object):
-    def test_single(self):
-        self.assertEqual(self.maximise_fn([1], 2), 1)
 
-    def test_single_overflow(self):
-        self.assertEqual(self.maximise_fn([3], 2), 1)
-
-    def test_example(self):
-        self.assertEqual(self.maximise_fn([3, 3, 9, 9, 5], 7), 6)
-
-    def test_zeroes(self):
-        self.assertEqual(self.maximise_fn([0, 0, 0], 1), 0)
-        self.assertEqual(self.maximise_fn([0, 0, 0], 3), 0)
-
-    def test_ones(self):
-        self.assertEqual(self.maximise_fn([1, 1, 1, 1], 1), 0)
-        self.assertEqual(self.maximise_fn([1, 1, 1, 1], 2), 1)
-        self.assertEqual(self.maximise_fn([1, 1, 1, 1], 3), 2)
-        self.assertEqual(self.maximise_fn([1, 1, 1, 1], 4), 3)
-
-    def test_simple(self):
-        self.assertEqual(self.maximise_fn([5, 4], 7), 5)
-        self.assertEqual(self.maximise_fn([3, 1, 2], 7), 6)
-        self.assertEqual(self.maximise_fn([1, 1, 8], 7), 3)
-
-# class TestMaximise(TestMaximiseMixin, unittest.TestCase):
-#     maximise_fn = lambda self, array, m: maximise(SkipList, array, m)
-
-# ALTERNATE_IMPLEMENTATIONS = [ZhukovSkipList]
-
+DATA_FILES = [
+    # "skip_list/benchmarks/large_input.txt",
+    "skip_list/benchmarks/medium_input_converted.txt"
+    # "skip_list/benchmarks/small_input.txt"
+]
 
 if __name__ == "__main__":
-    unittest.main()
+    for data_file in DATA_FILES:
+        test_data = get_test_data(data_file)
+        for test in test_data:
+            expected = test.answer
+            for implementation in IMPLEMENTATIONS:
+                with benchmark(implementation):
+                    actual  = maximise(implementation, test.data_array, test.mod_number)
+                    # assert expected == actual
