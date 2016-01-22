@@ -30,7 +30,10 @@ class benchmark(object):
         print("%s : %0.3f seconds" % (self.name, end-self.start))
         return False
 
-IMPLEMENTATIONS = [SkipList, ZhukovSkipList]
+IMPLEMENTATIONS = [
+    # SkipList,
+    ZhukovSkipList
+]
 
 TestData = namedtuple("TestData", ("mod_number", "data_array", "answer"))
 
@@ -62,6 +65,12 @@ if __name__ == "__main__":
         for test in test_data:
             expected = test.answer
             for implementation in IMPLEMENTATIONS:
-                with benchmark(implementation):
-                    actual  = maximise(implementation, test.data_array, test.mod_number)
-                    # assert expected == actual
+                # with benchmark(implementation):
+                actual  = maximise(implementation, test.data_array, test.mod_number)
+                if expected != actual:
+                    print(("Wrong answer.  Expected {expected}, "
+                           "but got {actual}, difference of {difference} on {data}...").format(
+                               expected=expected,
+                               actual=actual,
+                               difference=expected - actual,
+                               data=test.data_array[:5]))
