@@ -1,4 +1,9 @@
-from .zhukov_skip_list import Skiplist as ZhukovSkipList
+"""test_maximise.py - test Skip List set implementations against the Hacker
+Rank maximise sum problem.
+
+This is a short test to ensure the code passes before we subject it to the
+ridiculously sized data.
+"""
 from .benchmark import maximise
 
 
@@ -28,9 +33,9 @@ class TestMaximiseMixin(object):
         self.assertEqual(self.maximise_fn([1, 1, 8], 7), 3)
 
 
-class TestMaximise(TestMaximiseMixin, unittest.TestCase):
-    maximise_fn = lambda self, array, m: maximise(SkipList, array, m)
+# class TestMaximise(TestMaximiseMixin, unittest.TestCase):
+#     maximise_fn = lambda self, array, m: maximise(SkipList, array, m)
 
 
-if __name__ == "__main__":
-    unittest.main()
+# if __name__ == "__main__":
+#     unittest.main()

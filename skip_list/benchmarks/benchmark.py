@@ -1,7 +1,6 @@
 from collections import namedtuple
 
 from skip_list.skip_list import SkipList
-from .zhukov_skip_list import Skiplist as ZhukovSkipList
 import unittest
 import time
 
@@ -32,7 +31,6 @@ class benchmark(object):
 
 IMPLEMENTATIONS = [
     # SkipList,
-    ZhukovSkipList
 ]
 
 TestData = namedtuple("TestData", ("mod_number", "data_array", "answer"))
