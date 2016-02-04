@@ -10,7 +10,7 @@
 from random import random
 
 
-class SkipList(object):
+class SkipListSet(object):
     def __init__(self):
         self.tail = ["<TAIL>"]
         self.head = ["<HEAD>", self.tail]

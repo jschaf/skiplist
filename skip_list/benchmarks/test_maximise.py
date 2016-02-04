@@ -34,7 +34,7 @@ class TestMaximiseMixin(object):
 
 
 # class TestMaximise(TestMaximiseMixin, unittest.TestCase):
-#     maximise_fn = lambda self, array, m: maximise(SkipList, array, m)
+#     maximise_fn = lambda self, array, m: maximise(SkipListSet, array, m)
 
 
 # if __name__ == "__main__":

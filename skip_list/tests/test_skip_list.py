@@ -1,6 +1,6 @@
 import unittest
 
-from skip_list.skip_list import SkipList
+from skip_list.skip_list import SkipListSet
 
 
 class SkipListTestMixin(object):
@@ -57,7 +57,7 @@ class SkipListTestMixin(object):
 
 
 class TestSkipList(SkipListTestMixin, unittest.TestCase):
-    SkipListClass = SkipList
+    SkipListClass = SkipListSet
 
 
 if __name__ == '__main__':

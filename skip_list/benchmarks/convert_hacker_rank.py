@@ -1,4 +1,4 @@
-from skip_list.skip_list import SkipList
+from skip_list.skip_list import SkipListSet
 from .benchmark import maximise
 
 import sys
@@ -18,7 +18,7 @@ def convert_hacker_rank_input_file_to_ours(path, new_path):
             array_line = hacker_rank_file.readline()
             array = [int(x) for x in array_line.split()]
 
-            answer = maximise(SkipList, array, mod)
+            answer = maximise(SkipListSet, array, mod)
 
             lines_to_write = [size_mod_line, array_line, str(answer) + "\n"]
 

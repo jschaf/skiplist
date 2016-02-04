@@ -1,6 +1,6 @@
 from collections import namedtuple
 
-from skip_list.skip_list import SkipList
+from skip_list.skip_list import SkipListSet
 import unittest
 import time
 
@@ -30,7 +30,7 @@ class benchmark(object):
         return False
 
 IMPLEMENTATIONS = [
-    # SkipList,
+    # SkipListSet,
 ]
 
 TestData = namedtuple("TestData", ("mod_number", "data_array", "answer"))
